@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Analytics Dashboard</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --primary-accent: #4f46e5;
+        }
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: white;
+            padding: 2.5rem 0;
+            border-radius: 0 0 24px 24px;
+            margin-bottom: 2rem;
+        }
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+        .metric-card {
+            border-left: 5px solid var(--primary-accent);
+        }
+        .btn-predict {
+            background-color: var(--primary-accent);
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 10px;
+            width: 100%;
+        }
+        .btn-predict:hover {
+            background-color: #4338ca;
+            color: white;
+        }
+        .result-badge {
+            font-size: 1.25rem;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header Banner -->
+<div class="dashboard-header text-center">
+    <div class="container">
+        <h1 class="fw-bold"><i class="fa-solid fa-chart-line me-2"></i>Student Placement Dashboard</h1>
+        <p class="mb-0 opacity-75">Interactive ML-powered prediction and metric analytical charts</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        
+        <!-- Left Column: Input Form & Metric Sliders -->
+        <div class="col-lg-4">
+            <div class="card p-4 h-100">
+                <h4 class="fw-bold mb-4"><i class="fa-solid fa-sliders text-indigo me-2"></i>Student Metrics</h4>
+                <form id="predictionForm">
+                    
+                    <div class="mb-4">
+                        <label class="form-label d-flex justify-content-between font-weight-bold">
+                            <span>CGPA</span>
+                            <span id="cgpaVal" class="badge bg-primary">7.5</span>
+                        </label>
+                        <input type="range" class="form-range" id="cgpa" min="0" max="10" step="0.1" value="7.5" oninput="updateVal('cgpa', this.value)">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label d-flex justify-content-between">
+                            <span>IQ Score</span>
+                            <span id="iqVal" class="badge bg-primary">100</span>
+                        </label>
+                        <input type="range" class="form-range" id="iq" min="50" max="200" step="1" value="100" oninput="updateVal('iq', this.value)">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label d-flex justify-content-between">
+                            <span>Profile Score</span>
+                            <span id="profileVal" class="badge bg-primary">70</span>
+                        </label>
+                        <input type="range" class="form-range" id="profile_score" min="0" max="100" step="1" value="70" oninput="updateVal('profile', this.value)">
+                    </div>
+
+                    <button type="submit" class="btn btn-predict mt-2">
+                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Analyze Profile
+                    </button>
+                </form>
+
+                <!-- Status Output Box -->
+                <div id="resultBox" class="mt-4" style="display: none;">
+                    <div id="resultBadge" class="result-badge"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Visual Dashboard Charts -->
+        <div class="col-lg-8">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card p-3 metric-card">
+                        <small class="text-muted fw-bold">CGPA SCORE</small>
+                        <h3 class="fw-bold text-dark mb-0" id="cardCgpa">7.5 / 10</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 metric-card" style="border-left-color: #10b981;">
+                        <small class="text-muted fw-bold">IQ LEVEL</small>
+                        <h3 class="fw-bold text-dark mb-0" id="cardIq">100</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 metric-card" style="border-left-color: #f59e0b;">
+                        <small class="text-muted fw-bold">PROFILE SCORE</small>
+                        <h3 class="fw-bold text-dark mb-0" id="cardProfile">70 / 100</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Container -->
+            <div class="row g-4">
+                <!-- Bar Chart: Metric Comparison -->
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <h6 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-chart-simple me-2"></i>Score Performance (%)</h6>
+                        <canvas id="barChart" height="220"></canvas>
+                    </div>
+                </div>
+
+                <!-- Radar Chart: Feature Strength -->
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <h6 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-chart-pie me-2"></i>Feature Radar Map</h6>
+                        <canvas id="radarChart" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Real-time slider text sync
+    function updateVal(id, val) {
+        document.getElementById(id + 'Val').innerText = val;
+    }
+
+    // Chart.js Instances Initialization
+    let barChart, radarChart;
+
+    function initCharts() {
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['CGPA', 'IQ', 'Profile'],
+                datasets: [{
+                    label: 'Score Percentage %',
+                    data: [75, 33.3, 70],
+                    backgroundColor: ['#4f46e5', '#10b981', '#f59e0b'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, max: 100 } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        const radarCtx = document.getElementById('radarChart').getContext('2d');
+        radarChart = new Chart(radarCtx, {
+            type: 'radar',
+            data: {
+                labels: ['CGPA', 'IQ Score', 'Profile Score'],
+                datasets: [{
+                    label: 'Current Candidate',
+                    data: [75, 33.3, 70],
+                    fill: true,
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                    borderColor: '#4f46e5',
+                    pointBackgroundColor: '#4f46e5'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { r: { min: 0, max: 100 } }
+            }
+        });
+    }
+
+    // Handle AJAX Form Submission
+    document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const payload = {
+            cgpa: document.getElementById('cgpa').value,
+            iq: document.getElementById('iq').value,
+            profile_score: document.getElementById('profile_score').value
+        };
+
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.success) {
+            // Update Top Summary Cards
+            document.getElementById('cardCgpa').innerText = res.scores.cgpa + " / 10";
+            document.getElementById('cardIq').innerText = res.scores.iq;
+            document.getElementById('cardProfile').innerText = res.scores.profile + " / 100";
+
+            // Render Prediction Result Badge
+            const resultBox = document.getElementById('resultBox');
+            const resultBadge = document.getElementById('resultBadge');
+            resultBox.style.display = "block";
+
+            if (res.placed === 1) {
+                resultBadge.className = "result-badge bg-success text-white";
+                resultBadge.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i>${res.status}`;
+            } else {
+                resultBadge.className = "result-badge bg-danger text-white";
+                resultBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i>${res.status}`;
+            }
+
+            // Update Dynamic Charts
+            const newPercentages = [res.percentages.cgpa, res.percentages.iq, res.percentages.profile];
+            
+            barChart.data.datasets[0].data = newPercentages;
+            barChart.update();
+
+            radarChart.data.datasets[0].data = newPercentages;
+            radarChart.update();
+        }
+    });
+
+    window.onload = initCharts;
+</script>
+
+</body>
+</html>
