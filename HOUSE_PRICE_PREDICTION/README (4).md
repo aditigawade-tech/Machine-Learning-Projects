@@ -1,6 +1,5 @@
 # 🏠 House Price Prediction
-
-**Experiment 06** — Developing and evaluating a regression model to predict house prices using the `E06_house price data less.csv` dataset.
+-Developing and evaluating a regression model to predict house prices using the `E06_house price data less.csv` dataset.
 
 ## 📌 Objective
 
