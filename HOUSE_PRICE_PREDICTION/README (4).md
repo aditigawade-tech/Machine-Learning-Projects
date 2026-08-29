@@ -101,4 +101,6 @@ Both **Linear Regression** and **Decision Tree Regressor** were trained and eval
 - Use the full dataset instead of a 40% sample, if compute allows
 
 ---
-*Part of a regression modeling experiment series.*
+## Author
+Gawade Aditi
+Artificial Intelligence and Data Science Student
