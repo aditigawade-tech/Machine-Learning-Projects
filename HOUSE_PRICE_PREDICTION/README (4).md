@@ -102,5 +102,5 @@ Both **Linear Regression** and **Decision Tree Regressor** were trained and eval
 
 ---
 ## Author
-Gawade Aditi
-Artificial Intelligence and Data Science Student
+-Gawade Aditi
+- Artificial Intelligence and Data Science Student
